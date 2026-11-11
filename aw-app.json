@@ -1,0 +1,367 @@
+{
+  "manifest_version": 1,
+  "id": "business-team",
+  "name": "Business Team",
+  "version": "0.1.0",
+  "description": "The business-planning agent team, shipped as one installable unit: a Scout that watches the market, a Finance persona that prices an idea before anyone builds it, a Strategist that watches our own traction, a PM that decides what is worth pursuing, and a Steward that drives one business Plan forward on its cadence and routes each iteration to whoever the plan's current gap names — plus the five skills that keep those lanes apart and the Business Planning flow that connects them to the Dev Team.",
+  "tier": "inprocess",
+  "requires_ui_refresh": false,
+  "category": "Runnables",
+  "publisher": "TekFlox",
+  "resource_estimate": {
+    "cpu": "low",
+    "memory": "low",
+    "disk": "low"
+  },
+  "runtime": {
+    "python": ">=3.11",
+    "entrypoint": "business_team_app.plugin:BusinessTeamAppPlugin",
+    "pip_requires": []
+  },
+  "permissions": [
+    "agents:contribute"
+  ],
+  "contributes": {
+    "skills": [
+      {
+        "id": "business-scout",
+        "path": "skills/business-scout/SKILL.md",
+        "description": "Contract for the Business Scout agent — watches the MARKET (competitors, demand signals, emerging opportunities, gaps) and writes each finding into plan memory with its evidence. Surfaces opportunities; never proposes solutions and never decides pursue/park."
+      },
+      {
+        "id": "business-finance",
+        "path": "skills/business-finance/SKILL.md",
+        "description": "Contract for the Business Finance agent — estimates cost-to-build, cost-to-run and a rough ROI/pricing hypothesis BEFORE anything is built, and writes the numbers into the budget fields that are actually enforced. Advises; PM-business decides."
+      },
+      {
+        "id": "business-strategist",
+        "path": "skills/business-strategist/SKILL.md",
+        "description": "Contract for the Business Strategist agent — watches OUR traction (campaign performance, A/B outcomes, growth KPIs, audience fit), defines audience/ICP and GTM, and designs ads and experiments. Design is autonomous; real ad spend needs a human every time."
+      },
+      {
+        "id": "business-pm",
+        "path": "skills/business-pm/SKILL.md",
+        "description": "Contract for the PM-business agent — decides WHETHER an opportunity is worth pursuing and owns the Plan's delivery criteria, on evidence the other personas already wrote down. Builds disposable pilots for adherence testing; does not scope build work and does not publish without a human."
+      },
+      {
+        "id": "business-steward",
+        "path": "skills/business-steward/SKILL.md",
+        "description": "Contract for the Business Steward agent — the per-iteration driver of a business Plan, woken by the plan ticker, routing each tick to the persona the plan's current gap names and closing the iteration with a decision. Enforces the pursue/park evidence mandate and owns the plan's shared memory."
+      }
+    ],
+    "agents": {
+      "agent_configs": [
+        {
+          "slug": "business-team-config",
+          "name": "Business Team",
+          "description": "The same bundle the workspace's existing coder agents run under (agent-config-aw-full), declared here so a fresh workspace gets the business team without anyone recreating it by hand: full workspace filesystem access, the shared network, git/GitHub and docker, /tmp, and the aw-gateway MCP server — without which there is no knowledge base, no Kanban, no plan-memory tools and no Agents Flow terminal actions, which for this team is the difference between a planning loop and five agents that cannot record anything.",
+          "mcp_servers": [
+            "aw-gateway"
+          ],
+          "permissions": {
+            "workspace_access": true,
+            "share_network": true,
+            "github": true,
+            "docker": true,
+            "tmp_access": true
+          },
+          "auto_compact_threshold_tokens": 500000
+        }
+      ],
+      "groups": [
+        {
+          "slug": "business-team",
+          "name": "Business Team",
+          "description": "Scout, Finance, Strategist, PM-business and the Steward — the agents that take a business idea from 'somebody noticed a gap' to 'this is worth building, here is what it costs and who it is for', and hand the build itself to the Dev Team.",
+          "instructions_file": "prompts/group.md",
+          "capabilities": "Runs one business Plan forward on its cadence: discovers market opportunities with evidence, prices them before anything is built, reads our own traction, and decides pursue/park against written delivery criteria. Records everything in the Plan's own memory so the next cycle inherits it. Does not implement — a graduated item goes to the Dev Team as its own Target.",
+          "kanban_target_status": "running"
+        }
+      ],
+      "agents": [
+        {
+          "slug": "business-steward",
+          "name": "Business Steward",
+          "description": "Drives one business Plan forward, one cadence iteration at a time: reads the plan state pack and its memory digest, routes the tick to whichever persona the current gap names, and closes the iteration with the decision that names what actually happened. Reached by the plan ticker, not by a human.",
+          "system_prompt_file": "prompts/business-steward.md",
+          "model_slug": "claude-runner-sonnet",
+          "disable_harness_tools": true,
+          "agent_config_slug": "business-team-config",
+          "group_slug": "business-team",
+          "skill_slugs": [
+            "business-steward"
+          ],
+          "capabilities": "Routes one business-plan iteration to the right persona and closes it with a decision. Enforces the pursue/park evidence mandate, keeps the plan's shared summary current, and proposes conclusion for a human to confirm — it never concludes a plan itself.",
+          "use_cases": [
+            "drive this business plan's next cadence iteration",
+            "what is this business plan missing before a pursue/park call",
+            "route this business plan's current gap to the right persona"
+          ],
+          "hidden_from_flow": false,
+          "icon": "compass",
+          "color": "#7ee787"
+        },
+        {
+          "slug": "business-scout",
+          "name": "Business Scout",
+          "description": "Watches the market: competitors, demand signals, emerging opportunities, the gaps nobody has filled. Surfaces each one with the evidence behind it and writes it into the plan's memory — and stops there, because proposing the solution and deciding whether to chase it are somebody else's calls.",
+          "system_prompt_file": "prompts/business-scout.md",
+          "model_slug": "claude-runner-sonnet",
+          "disable_harness_tools": true,
+          "agent_config_slug": "business-team-config",
+          "group_slug": "business-team",
+          "skill_slugs": [
+            "business-scout"
+          ],
+          "capabilities": "Market and competitor discovery with evidence: finds opportunities and demand signals over web search and browsing, states confidence and source, and records one plan-memory entry per opportunity.",
+          "use_cases": [
+            "who else is already doing this and how well",
+            "is there demand for this, and what is the signal",
+            "what gaps are opening up in this market",
+            "find opportunities adjacent to what we already run"
+          ],
+          "hidden_from_flow": false,
+          "icon": "search",
+          "color": "#58a6ff"
+        },
+        {
+          "slug": "business-finance",
+          "name": "Business Finance",
+          "description": "Prices an idea before it is built: cost to build, cost to run, and a rough ROI or pricing hypothesis with its assumptions on the record. Advisory on the decision, binding on the numbers — the estimates land in the budget fields that actually refuse a dispatch.",
+          "system_prompt_file": "prompts/business-finance.md",
+          "model_slug": "claude-runner-sonnet",
+          "disable_harness_tools": true,
+          "agent_config_slug": "business-team-config",
+          "group_slug": "business-team",
+          "skill_slugs": [
+            "business-finance"
+          ],
+          "capabilities": "Estimates cost-to-build, cost-to-run and a rough ROI/pricing hypothesis for an opportunity before anything is built, writes the figures into the enforced Target/Plan budget fields, and states the assumptions so a later revision can say what changed.",
+          "use_cases": [
+            "what would this cost to build and to run",
+            "is there a plausible ROI here at all",
+            "set a budget for this piece of work",
+            "re-estimate this now that the scope changed"
+          ],
+          "hidden_from_flow": false,
+          "icon": "calculator",
+          "color": "#f0c000"
+        },
+        {
+          "slug": "business-strategist",
+          "name": "Business Strategist",
+          "description": "Watches our own traction rather than the market: campaign performance, A/B outcomes, growth KPIs, whether the audience we assumed is the audience we have. Designs the ads and the experiments freely — and asks a human before a single unit of real spend moves.",
+          "system_prompt_file": "prompts/business-strategist.md",
+          "model_slug": "claude-runner-sonnet",
+          "disable_harness_tools": true,
+          "agent_config_slug": "business-team-config",
+          "group_slug": "business-team",
+          "skill_slugs": [
+            "business-strategist"
+          ],
+          "capabilities": "Reads our own traction and turns it into strategy: defines audience/ICP and GTM as sections of a Plan's needs_strategy, designs ad campaigns and A/B tests, and records the metrics and decisions in plan memory. Designs spend; never commits it.",
+          "use_cases": [
+            "is this campaign actually working",
+            "who is our audience really, and what is the GTM",
+            "design an A/B test for this hypothesis",
+            "read the growth numbers and tell me what they say"
+          ],
+          "hidden_from_flow": false,
+          "icon": "trending-up",
+          "color": "#f78166"
+        },
+        {
+          "slug": "business-pm",
+          "name": "PM-business",
+          "description": "Decides whether an opportunity is worth pursuing — problem, target user, hypothesis, success metric, pursue or park — and owns the business Plan's delivery criteria. Will not make that call until the Scout, Finance and Strategist evidence is actually on the record, and hands the build itself to the Product Owner.",
+          "system_prompt_file": "prompts/business-pm.md",
+          "model_slug": "claude-runner-opus",
+          "disable_harness_tools": true,
+          "agent_config_slug": "business-team-config",
+          "group_slug": "business-team",
+          "kanban_target_status": "planned",
+          "skill_slugs": [
+            "business-pm"
+          ],
+          "capabilities": "Turns a researched opportunity into a pursue/park decision with a problem statement, a target user, a hypothesis and a success metric, and owns the Plan's delivery criteria. Builds disposable pilots for adherence testing; does not scope implementation and does not publish anything outward-facing without a human.",
+          "use_cases": [
+            "is this opportunity worth pursuing, on the evidence we have",
+            "write the delivery criteria for this business plan",
+            "build a throwaway demo to test whether anyone wants this",
+            "park this and say what would change our mind"
+          ],
+          "hidden_from_flow": false,
+          "icon": "target",
+          "color": "#d2a8ff"
+        }
+      ],
+      "agent_flows": [
+        {
+          "slug": "business-planning",
+          "name": "Agents Flow: Business Planning",
+          "description": "How a business idea becomes either a parked note or a Dev Team card. The loop does NOT start at a Source node: an active Plan whose follow_up_agent_slug is 'business-steward' wakes the Steward once per cadence period through the plan ticker, with the plan's state pack and memory digest as its input — the Source node here is only the secondary door, for a human or another agent firing an iteration by hand. Each tick the Steward routes to whichever persona the plan's current gap names: the Scout for market discovery, Finance for costing, the Strategist for our own traction and GTM (every Nth iteration, not every tick — it is a paid dispatch), PM-business for a pursue/park call, and the Product Owner when an item has graduated into real build work. Every edge is two-way: a persona that cannot answer routes back rather than guessing, and the pursue/park mandate runs on that return path — PM-business needs a Scout finding, a Finance estimate and a Strategist read already in plan memory before it decides, and the Steward is the enforcement point for that. Three nodes name agents this app does not own: product-owner and architect are the Dev Team's entry for a graduated item, and ux-coder-sonnet is how PM-business builds a disposable pilot. That is deliberate — a flow node is just a slug, the adjacency list is a map rather than a fence, and an agent sitting in two enabled flows simply gets a merged list. Business plans run auto_conclude=false, so the loop's strongest ending is the Steward proposing conclusion and a human confirming it.",
+          "enabled": true,
+          "graph": {
+            "nodes": [
+              {
+                "id": "source",
+                "type": "source",
+                "label": "Source",
+                "position": {
+                  "x": 40,
+                  "y": 280
+                }
+              },
+              {
+                "id": "agent-business-steward",
+                "type": "agent",
+                "agent_slug": "business-steward",
+                "label": "Business Steward",
+                "position": {
+                  "x": 340,
+                  "y": 280
+                }
+              },
+              {
+                "id": "agent-business-scout",
+                "type": "agent",
+                "agent_slug": "business-scout",
+                "label": "Business Scout",
+                "position": {
+                  "x": 660,
+                  "y": 60
+                }
+              },
+              {
+                "id": "agent-business-finance",
+                "type": "agent",
+                "agent_slug": "business-finance",
+                "label": "Business Finance",
+                "position": {
+                  "x": 660,
+                  "y": 200
+                }
+              },
+              {
+                "id": "agent-business-strategist",
+                "type": "agent",
+                "agent_slug": "business-strategist",
+                "label": "Business Strategist",
+                "position": {
+                  "x": 660,
+                  "y": 340
+                }
+              },
+              {
+                "id": "agent-business-pm",
+                "type": "agent",
+                "agent_slug": "business-pm",
+                "label": "PM-business",
+                "position": {
+                  "x": 660,
+                  "y": 480
+                }
+              },
+              {
+                "id": "agent-product-owner",
+                "type": "agent",
+                "agent_slug": "product-owner",
+                "label": "Product Owner (Dev Team)",
+                "position": {
+                  "x": 980,
+                  "y": 280
+                }
+              },
+              {
+                "id": "agent-architect",
+                "type": "agent",
+                "agent_slug": "architect",
+                "label": "Architect (Dev Team)",
+                "position": {
+                  "x": 1260,
+                  "y": 280
+                }
+              },
+              {
+                "id": "agent-ux-coder-sonnet",
+                "type": "agent",
+                "agent_slug": "ux-coder-sonnet",
+                "label": "UX Coder - Sonnet (Dev Team)",
+                "position": {
+                  "x": 980,
+                  "y": 500
+                }
+              }
+            ],
+            "edges": [
+              {
+                "id": "e-source-business-steward",
+                "source": "source",
+                "target": "agent-business-steward"
+              },
+              {
+                "id": "e-business-steward-business-scout",
+                "source": "agent-business-steward",
+                "target": "agent-business-scout"
+              },
+              {
+                "id": "e-business-steward-business-finance",
+                "source": "agent-business-steward",
+                "target": "agent-business-finance"
+              },
+              {
+                "id": "e-business-steward-business-strategist",
+                "source": "agent-business-steward",
+                "target": "agent-business-strategist"
+              },
+              {
+                "id": "e-business-steward-business-pm",
+                "source": "agent-business-steward",
+                "target": "agent-business-pm"
+              },
+              {
+                "id": "e-business-steward-product-owner",
+                "source": "agent-business-steward",
+                "target": "agent-product-owner"
+              },
+              {
+                "id": "e-business-pm-ux-coder-sonnet",
+                "source": "agent-business-pm",
+                "target": "agent-ux-coder-sonnet"
+              },
+              {
+                "id": "e-product-owner-architect",
+                "source": "agent-product-owner",
+                "target": "agent-architect"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "config_visible": false,
+  "dependencies": {
+    "apps": [
+      {
+        "id": "agents-platform-runners",
+        "version": ">=0.225.0",
+        "required": false,
+        "reason": "Provides the contributes.agents surface — it holds the Agents Platform base URL and identity token, which core does not. The floor is the version whose MCP surface this team's skills actually assume: plan memory (update_plan_memory / get_plan_memory), finish_plan_iteration, and plan_slug on create_target/update_target, which is how Finance's estimates become an enforced Target budget under a Plan. The remaining plan WRITE tools (create_plan, activate_plan, update_plan, record_plan_criterion) merged on that repo's master at 41fee45 and reach an installation with its next release — until then this team can run discovery, costing and traction iterations on an existing Plan, but cannot create or activate one. Non-required on purpose: a declaration that arrives before the provider is HELD and replayed the moment one appears, so this app installs cleanly either way."
+      },
+      {
+        "id": "devteam",
+        "version": ">=0.19.0",
+        "required": false,
+        "reason": "Owns the three agents this app's flow names but does not declare — product-owner and architect (the Dev Team entry for an item that graduated out of a business plan) and ux-coder-sonnet (how PM-business builds a disposable pilot). A flow node is a plain slug, so without this app installed those three nodes draw boxes wired to nothing: the graph still seeds, the hand-off target just isn't there. Non-required because a business plan's discovery, costing and traction iterations never touch them — only graduation does."
+      },
+      {
+        "id": "knowledgeable",
+        "version": ">=0.25.0",
+        "required": false,
+        "reason": "Supplies knowledge_search, which all five contracts make a mandatory first step. Non-required, but the team is materially worse without it: the KB is what stops the Scout re-surfacing an opportunity already parked and PM-business re-deciding something Frederico already ruled on."
+      }
+    ]
+  },
+  "migrations": {}
+}

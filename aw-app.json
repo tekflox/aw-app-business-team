@@ -2,7 +2,7 @@
   "manifest_version": 1,
   "id": "business-team",
   "name": "Business Team",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "The business-planning agent team, shipped as one installable unit: a Scout that watches the market, a Finance persona that prices an idea before anyone builds it, a Strategist that watches our own traction, a PM that decides what is worth pursuing, and a Steward that drives one business Plan forward on its cadence and routes each iteration to whoever the plan's current gap names \u2014 plus the five skills that keep those lanes apart and the Business Planning flow that connects them to the Dev Team.",
   "tier": "inprocess",
   "requires_ui_refresh": false,

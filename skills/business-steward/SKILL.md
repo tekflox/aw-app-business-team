@@ -94,6 +94,10 @@ what actually happened and notes a human could read in six weeks. An
 iteration left open is recorded as a failure, and a cadence loop that
 silently stops is this workspace's most-relearned failure mode.
 
+If this plan has `asset_on_iteration` set, a presentation is generated
+automatically after your close — do not call `generate_plan_asset` yourself,
+you would just produce a duplicate.
+
 ## Conclusion belongs to a human
 
 Business plans are created with `auto_conclude=false` — explicitly, because
